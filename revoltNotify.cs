@@ -62,17 +62,22 @@ static async Task ProcessLoginRequestAsync(HttpClient client)
 				Console.WriteLine("\nFailed to login to Revolt. Check to make sure you've entered the correct credentials.");
 				return;
 			}
+			
+			sessionInfo.token = mfaLoginRes.token;
+			sessionInfo.user_id = mfaLoginRes.user_id;
 		}
 		else if (!loginRes.result.Equals("Success"))
 		{
 			Console.WriteLine("\nFailed to login to Revolt. Check to make sure you've entered the correct credentials.");
 			return;
 		}
+		else
+		{
+			sessionInfo.token = loginRes.token;
+			sessionInfo.user_id = loginRes.user_id;
+		}
 
 		Console.WriteLine("\nSuccessfully logged in.");
-		
-		sessionInfo.token = loginRes.token;
-		sessionInfo.user_id = loginRes.user_id;
 
 		var json = JsonSerializer.Serialize(sessionInfo);
 		File.WriteAllText($"{appDir}session_info.json", json);
