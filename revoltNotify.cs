@@ -37,12 +37,39 @@ static async Task ProcessLoginRequestAsync(HttpClient client)
 
 		var loginRes = await response.Content.ReadAsAsync<LoginResponse>();
 
-		if (!loginRes.result.Equals("Success"))
+		if (loginRes.result.Equals("MFA"))
+		{
+			MFAResponse mfaResponse = new();
+
+			Console.WriteLine("\nPlease enter a valid two-factor authentication code.");
+
+			mfaResponse.totp_code = Console.ReadLine();
+			
+			LoginRequest mfaLoginReq = new()
+			{
+				mfa_ticket = loginRes.ticket,
+				mfa_response = mfaResponse,
+				friendly_name = "revoltNotify Service"
+			};
+			
+			var mfaLoginResponse = await client.PostAsJsonAsync(
+				"https://api.revolt.chat/auth/session/login", mfaLoginReq);
+
+			var mfaLoginRes = await mfaLoginResponse.Content.ReadAsAsync<LoginResponse>();
+
+			if (!mfaLoginRes.result.Equals("Success"))
+			{
+				Console.WriteLine("\nFailed to login to Revolt. Check to make sure you've entered the correct credentials.");
+				return;
+			}
+		}
+		else if (!loginRes.result.Equals("Success"))
 		{
 			Console.WriteLine("\nFailed to login to Revolt. Check to make sure you've entered the correct credentials.");
 			return;
 		}
-		else Console.WriteLine("\nSuccessfully logged in.");
+
+		Console.WriteLine("\nSuccessfully logged in.");
 		
 		sessionInfo.token = loginRes.token;
 		sessionInfo.user_id = loginRes.user_id;
