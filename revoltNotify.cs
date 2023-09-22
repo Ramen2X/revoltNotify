@@ -97,7 +97,7 @@ static async Task GetMessagesFromChannelAsync(HttpClient client, string user_id,
 {
 	var fetchUserRes = await client.GetFromJsonAsync<User>($"https://api.revolt.chat/users/{user_id}");
 	
-	if (fetchUserRes.status.presence.Equals("Invisible")) 
+	if (fetchUserRes.status == null) 
 	{
 		var unreadRes = await client.GetFromJsonAsync<UnreadMessage[]>("https://api.revolt.chat/sync/unreads");
 
